@@ -1,0 +1,337 @@
+
+<!DOCTYPE html>
+<html lang="id" class="overflow-x-hidden">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>WawasanAI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              serif: ['Merriweather', 'serif'],
+              sans: ['Inter', 'sans-serif'],
+            },
+            colors: {
+              primary: '#2563eb', // Blue-600
+              primaryDark: '#1d4ed8', // Blue-700
+              secondary: '#475569', // Slate-600
+              slate: {
+                50: '#f8fafc',
+                100: '#f1f5f9',
+                200: '#e2e8f0',
+                300: '#cbd5e1',
+                400: '#94a3b8',
+                500: '#64748b',
+                600: '#475569',
+                700: '#334155',
+                800: '#1e293b',
+                900: '#0f172a', // Deep Blue/Grey for Dark Mode
+                950: '#020617',
+              },
+              sepia: {
+                bg: '#fcf6e5', // Softer Amber
+                text: '#451a03', // Amber-950
+                accent: '#d97706'
+              }
+            },
+            animation: {
+              'fade-in': 'fadeIn 0.7s cubic-bezier(0.16, 1, 0.3, 1)',
+              'fade-in-up': 'fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
+              'blob': 'blob 10s infinite', // Slower animation for cleaner look
+              'spin-slow': 'spin 8s linear infinite',
+              'spin-reverse': 'spin-reverse 10s linear infinite',
+              'float': 'float 6s ease-in-out infinite',
+              'spin-seamless': 'spin 3s linear infinite',
+            },
+            keyframes: {
+              fadeIn: {
+                '0%': { opacity: '0' },
+                '100%': { opacity: '1' },
+              },
+              fadeInUp: {
+                '0%': { opacity: '0', transform: 'translateY(20px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              },
+              blob: {
+                '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                '33%': { transform: 'translate(30px, -30px) scale(1.05)' }, // Reduced movement range
+                '66%': { transform: 'translate(-20px, 20px) scale(0.95)' },
+                '100%': { transform: 'translate(0px, 0px) scale(1)' },
+              },
+              'spin-reverse': {
+                '0%': { transform: 'rotate(0deg)' },
+                '100%': { transform: 'rotate(-360deg)' },
+              },
+              float: {
+                '0%, 100%': { transform: 'translateY(0)' },
+                '50%': { transform: 'translateY(-20px)' },
+              }
+            }
+          },
+        },
+      }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400&display=swap" rel="stylesheet">
+    
+    <!-- MathJax for LaTeX support -->
+    <script>
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          displayMath: [['$$', '$$'], ['\\[', '\\]']],
+          processEscapes: true
+        },
+        startup: {
+          typeset: false // We will control typesetting manually in React
+        },
+        svg: {
+          fontCache: 'global'
+        }
+      };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <!-- Mermaid JS for Diagrams -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({ startOnLoad: false, theme: 'neutral' });
+    </script>
+
+    <script type="importmap">
+    {
+      "imports": {
+        "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+        "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
+        "react/": "https://esm.sh/react@^19.2.3/",
+        "react": "https://esm.sh/react@^19.2.3",
+        "lucide-react": "https://esm.sh/lucide-react@^0.562.0"
+      }
+    }
+    </script>
+    <style>
+      /* Smooth Scrolling */
+      html {
+        scroll-behavior: smooth;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        overscroll-behavior-y: none; /* Prevent rubber banding on pull refresh */
+        overflow-x: hidden; /* CRITICAL: Prevent horizontal scrollbar globally */
+      }
+      
+      body {
+        overflow-x: hidden;
+        width: 100%;
+      }
+
+      /* Custom scrollbar for better aesthetics */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      
+      /* Light Mode Scrollbar (Default) */
+      ::-webkit-scrollbar-thumb {
+        background-color: rgba(156, 163, 175, 0.5); /* Slate-400 equivalent */
+        border-radius: 10px;
+        border: 2px solid transparent;
+        background-clip: content-box;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background-color: rgba(100, 116, 139, 0.8);
+      }
+
+      /* Dark Mode Scrollbar - Applied when 'dark' class is on html/body */
+      .dark ::-webkit-scrollbar-thumb {
+        background-color: rgba(71, 85, 105, 0.6); /* Slate-600 */
+      }
+      .dark ::-webkit-scrollbar-thumb:hover {
+        background-color: rgba(148, 163, 184, 0.8); /* Slate-400 */
+      }
+      /* Dark mode track should match dark body to be seamless */
+      .dark ::-webkit-scrollbar-track {
+        background-color: transparent; 
+      }
+
+      /* Sepia Mode Scrollbar */
+      .bg-sepia-bg ::-webkit-scrollbar-thumb {
+        background-color: rgba(180, 83, 9, 0.3); /* Amber tone */
+      }
+
+      /* --- PROFESSIONAL DROP CAP --- */
+      .drop-cap::first-letter {
+        float: left;
+        font-family: 'Merriweather', serif;
+        font-weight: 900;
+        font-size: 3.8rem; /* Large and bold */
+        line-height: 0.85; /* Tighter line height to align with top */
+        margin-right: 0.75rem;
+        margin-top: 0.2rem;
+        margin-bottom: -0.2rem;
+        color: inherit; /* Inherits text color, can be overridden */
+      }
+
+      /* Sepia specific drop cap color */
+      .bg-sepia-bg .drop-cap::first-letter {
+        color: #78350f; /* Amber-900 */
+      }
+      
+      /* Dark mode specific drop cap color */
+      .dark .drop-cap::first-letter {
+        color: #60a5fa; /* Blue-400 */
+      }
+
+      /* Light mode specific drop cap color */
+      .bg-slate-50 .drop-cap::first-letter {
+        color: #2563eb; /* Blue-600 */
+      }
+
+      /* --- FIXED FLASHCARD 3D LOGIC --- */
+      .flashcard-scene {
+        perspective: 1500px;
+      }
+      
+      .flashcard-inner {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+        transform-style: preserve-3d;
+      }
+
+      /* Class to apply via JS/React when flipped */
+      .flashcard-flipped {
+        transform: rotateY(180deg);
+      }
+
+      /* Common styles for both faces */
+      .flashcard-face {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden; /* CRITICAL */
+        -webkit-backface-visibility: hidden; /* Safari */
+        border-radius: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      /* Front Face: Default */
+      .flashcard-front {
+        transform: rotateY(0deg);
+        z-index: 2;
+      }
+
+      /* Back Face: Pre-rotated 180deg so it matches the flip */
+      .flashcard-back {
+        transform: rotateY(180deg);
+        z-index: 1;
+      }
+
+      /* Explanation Mode Specific Selection Styles */
+      .mode-explanation ::selection {
+        background-color: #9333ea; /* Purple-600 */
+        color: white;
+      }
+      .mode-explanation {
+        cursor: text;
+      }
+      
+      /* MathJax Overflow Fix */
+      mjx-container {
+        overflow-x: auto;
+        overflow-y: hidden;
+        max-width: 100%;
+      }
+
+      /* --- NEW 3D LOADING ANIMATIONS --- */
+      
+      .scene-3d {
+        perspective: 800px;
+        width: 120px;
+        height: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .cube-3d {
+        width: 60px;
+        height: 60px;
+        position: relative;
+        transform-style: preserve-3d;
+        animation: spin-cube 8s linear infinite;
+      }
+      
+      .cube-face {
+        position: absolute;
+        width: 60px;
+        height: 60px;
+        border: 2px solid rgba(59, 130, 246, 0.8);
+        background: rgba(59, 130, 246, 0.15);
+        box-shadow: 0 0 30px rgba(59, 130, 246, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        color: white;
+        backface-visibility: visible;
+      }
+
+      .cube-face:nth-child(1) { transform: rotateY(0deg) translateZ(30px); }
+      .cube-face:nth-child(2) { transform: rotateY(90deg) translateZ(30px); }
+      .cube-face:nth-child(3) { transform: rotateY(180deg) translateZ(30px); }
+      .cube-face:nth-child(4) { transform: rotateY(-90deg) translateZ(30px); }
+      .cube-face:nth-child(5) { transform: rotateX(90deg) translateZ(30px); }
+      .cube-face:nth-child(6) { transform: rotateX(-90deg) translateZ(30px); }
+
+      @keyframes spin-cube {
+        0% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+        100% { transform: rotateX(360deg) rotateY(360deg) rotateZ(360deg); }
+      }
+
+      .gyro-ring {
+        position: absolute;
+        border-radius: 50%;
+        border: 2px solid transparent;
+        border-top-color: #8b5cf6; 
+        border-bottom-color: #3b82f6; 
+        box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
+      }
+
+      .scanner-radar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        border: 2px solid rgba(16, 185, 129, 0.4);
+        position: relative;
+        background: radial-gradient(circle, rgba(16,185,129,0.1) 0%, transparent 70%);
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+      }
+      .scanner-line {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        border-radius: 50%;
+        background: conic-gradient(from 0deg, transparent 0deg, rgba(16, 185, 129, 0.8) 30deg, transparent 31deg);
+        animation: spin-radar 2s linear infinite;
+      }
+
+      @keyframes spin-radar {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+  <link rel="stylesheet" href="/index.css">
+</head>
+  <body class="bg-slate-50 text-slate-900 font-sans antialiased transition-colors duration-500 selection:bg-blue-500/30 selection:text-blue-900 dark:selection:text-white">
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>

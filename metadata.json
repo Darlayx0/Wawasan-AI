@@ -1,0 +1,5 @@
+{
+  "name": "WawasanAI - Literacy & Knowledge Booster",
+  "description": "An AI-powered application to enhance reading literacy and general knowledge. Generates articles on any topic using Gemini 3 Flash with Google Search, followed by a comprehensive assessment.",
+  "requestFramePermissions": []
+}
